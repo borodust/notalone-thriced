@@ -1,0 +1,78 @@
+* Gameplay
+
+** General
+Third-person arcade zombie shooter in 3D.
+
+Single endless level with possibly increasing difficulty. The goal is too kill
+as much zombies as possible.
+
+Gameplay is fast paced. Mood is dark.
+
+** Menus
+
+*** Main
+- Start
+- Score
+- Exit From Game
+
+*** Pause
+- Exit To Main Menu
+- Exit From Game
+
+** Level
+Endless level is completely dark. Only way to see anything is a flashlight.
+
+** Equipment
+- Main weapon: shotgun "Boomstick". Infinite ammo. Minimal reload delay.
+- Flashlight
+
+** Controls
+Player should be able to use keyboard/mouse and gamepad.
+
+*** Keboard/mouse
+- Flashlight cone follows player's mouse
+- WASD for movement
+- Left mouse button to use a weapon
+
+*** Gamepad
+- Left stick for movement
+- Right stick for controlling flashlight and fire direction
+- Right/left trigger to use a weapon
+
+References:
+- [[https://github.com/borodust/notalone][NOTALONE]]
+
+* Audio
+- Main and pause menu theme
+- Gameplay theme
+- Optional: Death/Score menu theme
+- Zombie spawn sounds
+- Shotgun fire and reload sounds
+
+* External Assets
+- [[https://kenney.nl/assets/graveyard-kit][Kenney Graveyard Kit]]
+- [[https://kenney.itch.io/kenney-character-assets][Kenney Characters Assets]]
+
+* Platforms
+- Windows 7 x64 or newer
+- Ubuntu 18.04 x86_64 equivalent or newer (Linux Mint 19+)
+  - X Server or XWayland required
+
+* Minimal Hardware
+- GPU with OpenGL 4.1+
+  - Nvidia GeForce 400 series or newer
+  - AMD Radeon HD 5000 series or newer
+  - Intel HD Graphics in Intel Ivy Bridge processors or newer
+- CPU with AVX
+  - Intel Sandy Bridge or newer (since 2011)
+  - AMD Bulldozer or newer (since 2011)
+- Any sound card
+
+* Licensing
+- Game code: MIT
+- Audio: Creative Commons 3.0
+- External assets: See each asset's license
+
+* Team
+- [[https://github.com/borodust][Borodust]]
+- [[https://github.com/TatriX][Tatrix]]
