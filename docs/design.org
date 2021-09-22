@@ -1,7 +1,7 @@
 * Gameplay
 
 ** General
-Third-person arcade zombie shooter in 3D.
+Third-person arcade sci-fi zombie shooter in 3D.
 
 Single endless level with possibly increasing difficulty. The goal is too kill
 as much zombies as possible.
@@ -21,9 +21,10 @@ Gameplay is fast paced. Mood is dark.
 
 ** Level
 Endless level is completely dark. Only way to see anything is a flashlight.
+Action is happening somewhere in space, maybe in a space station.
 
 ** Equipment
-- Main weapon: shotgun "Boomstick". Infinite ammo. Minimal reload delay.
+- Main weapon: Blaster. Infinite ammo. Minimal reload delay.
 - Flashlight
 
 ** Controls
@@ -50,7 +51,8 @@ References:
 - Shotgun fire and reload sounds
 
 * External Assets
-- [[https://kenney.nl/assets/graveyard-kit][Kenney Graveyard Kit]]
+- [[https://kenney.nl/assets/space-kit][Kenney Space Kit]]
+- [[https://kenney.nl/assets/blaster-kit][Kenney Blaster Kit]]
 - [[https://kenney.itch.io/kenney-character-assets][Kenney Characters Assets]]
 
 * Platforms
