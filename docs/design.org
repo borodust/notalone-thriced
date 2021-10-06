@@ -54,6 +54,11 @@ References:
 - [[https://kenney.nl/assets/space-kit][Kenney Space Kit]]
 - [[https://kenney.nl/assets/blaster-kit][Kenney Blaster Kit]]
 - [[https://kenney.itch.io/kenney-character-assets][Kenney Characters Assets]]
+- Textures
+  - [[https://3dtextures.me/2021/08/27/sci-fi-floor-003/][Floor 1]]
+  - [[https://3dtextures.me/2021/08/27/sci-fi-floor-003/][Floor 2]]
+  - [[https://3dtextures.me/2021/06/26/metal-plate-048/][Floor 3]]
+  - [[https://3dtextures.me/category/floor/][Other floors]]
 
 * Platforms
 - Windows 7 x64 or newer
