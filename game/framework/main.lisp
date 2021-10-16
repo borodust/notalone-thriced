@@ -3,7 +3,8 @@
 
 (defun init-loop ()
   (setf (aw:skybox *renderer*) (aw:make-color-skybox *renderer* 0.1 0.1 0.12 1.0))
-  (init-tools *tools*))
+  (init-tools *tools*)
+  (transition-to 'initial-state))
 
 
 (defun destroy-loop ()
@@ -14,6 +15,7 @@
   (when event
     (case (aw:event-type event)
       (:quit (throw 'quit nil)))
+    (game-state-process-event event)
     (handle-tool-event *tools* event)))
 
 
@@ -24,8 +26,10 @@
 
   (let ((time-delta 0.014))
     (update-tools *tools* time-delta)
+    (game-state-act)
     (aw:in-frame (*renderer*)
-      (render-tools *tools*))
+      (render-tools *tools*)
+      (game-state-draw))
     ;; FIXME: add proper delta calc
     (sleep time-delta)))
 
@@ -48,7 +52,8 @@
                                         :width width
                                         :height height)
                 (shout "Framework ready")
-                (let ((*renderer* renderer))
+                (let ((*renderer* renderer)
+                      (*game-state* (make-instance 'game-state)))
                   (with-tools (:notalone-thriced-tools :renderer renderer)
                     (init-loop)
                     (shout "Game ready")

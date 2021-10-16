@@ -20,8 +20,12 @@
   :pathname "game/"
   :components ((:file "packages")
                (:file "utils")
-               (:file "tools")
-               (:file "game")))
+               (:module "framework"
+                :components ((:file "tools")
+                             (:file "state")
+                             (:file "main")))
+               (:module "implementation"
+                :components ((:file "game")))))
 
 
 (asdf:defsystem :notalone-thriced/tools
