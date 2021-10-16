@@ -20,6 +20,7 @@
   :pathname "game/"
   :components ((:file "packages")
                (:file "utils")
+               (:file "tools")
                (:file "game")))
 
 
@@ -34,7 +35,9 @@
   :serial t
   :pathname "tools/"
   :components ((:file "packages")
-               (:file "eden")))
+               (:module "eden"
+                :components ((:file "eden")
+                             (:file "ui")))))
 
 
 (asdf:defsystem :notalone-thriced/bundle

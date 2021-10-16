@@ -2,16 +2,19 @@
 
 
 (defun init-loop ()
-  (setf (aw:skybox *renderer*) (aw:make-color-skybox *renderer* 0.1 0.1 0.12 1.0)))
+  (setf (aw:skybox *renderer*) (aw:make-color-skybox *renderer* 0.1 0.1 0.12 1.0))
+  (init-tools *tools*))
 
 
-(defun destroy-loop ())
+(defun destroy-loop ()
+  (destroy-tools *tools*))
 
 
 (defun handle-event (event)
   (when event
     (case (aw:event-type event)
-      (:quit (throw 'quit nil)))))
+      (:quit (throw 'quit nil)))
+    (handle-tool-event *tools* event)))
 
 
 (defun handle-loop ()
@@ -19,10 +22,12 @@
            (handle-event event)))
     (aw:handle-events #'%handle-event))
 
-  (aw:render-frame *renderer*)
-
-  ;; FIXME: add proper delta calc
-  (sleep 0.015))
+  (let ((time-delta 0.014))
+    (update-tools *tools* time-delta)
+    (aw:in-frame (*renderer*)
+      (render-tools *tools*))
+    ;; FIXME: add proper delta calc
+    (sleep time-delta)))
 
 
 (defun run ()
@@ -44,19 +49,20 @@
                                         :height height)
                 (shout "Framework ready")
                 (let ((*renderer* renderer))
-                  (init-loop)
-                  (shout "Game ready")
-                  (unwind-protect
-                       (catch 'quit
-                         (shout "Looping")
-                         (loop
-                           (tagbody start
-                              (restart-case
-                                  (handle-loop)
-                                (restart-loop ()
-                                  :report "Restart game loop"
-                                  (go start))))))
-                    (destroy-loop)))))))))))
+                  (with-tools (:notalone-thriced-tools :renderer renderer)
+                    (init-loop)
+                    (shout "Game ready")
+                    (unwind-protect
+                         (catch 'quit
+                           (shout "Looping")
+                           (loop
+                             (tagbody start
+                                (restart-case
+                                    (handle-loop)
+                                  (restart-loop ()
+                                    :report "Restart game loop"
+                                    (go start))))))
+                      (destroy-loop))))))))))))
 
 
 (defun asset-path (asset-name)
