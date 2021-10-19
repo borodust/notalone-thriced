@@ -5,7 +5,8 @@
 
 (defclass game-tools ()
   ((ui :initarg :ui)
-   (windows :initform (list))
+   (ui-hidden-p :initform t)
+   (windows :initform (list 'eden-window))
    (context :initform (make-hash-table :test 'equal))
    (last-time-delta :initform 0)))
 
@@ -47,12 +48,12 @@
 
 
 (defmethod notalone-thriced::handle-tool-event ((this game-tools) event)
-  (with-slots (windows ui) this
+  (with-slots (ui-hidden-p ui) this
     (awt:handle-ui-event ui event)
     (case (aw:event-type event)
       (:keyboard-button-down
        (when (eq :grave (aw:event-key-scan-code event))
-         (open-tool-window 'eden-window))))))
+         (setf ui-hidden-p (not ui-hidden-p)))))))
 
 
 (defmethod notalone-thriced::update-tools (tools time-delta)
@@ -62,10 +63,11 @@
 
 
 (defmethod notalone-thriced::render-tools (tools)
-  (with-slots (last-time-delta windows ui) tools
+  (with-slots (last-time-delta windows ui ui-hidden-p) tools
     (awt:ui (ui 1280 960 last-time-delta)
-      (loop for window in windows
-            do (funcall window)))
+      (unless ui-hidden-p
+        (loop for window in windows
+              do (funcall window))))
     (setf last-time-delta 0)))
 
 

@@ -51,6 +51,10 @@
   (draw (game-state)))
 
 
+(defun game-state-withdraw ()
+  (withdraw (game-state)))
+
+
 (defun transition-to (state-class &rest args &key &allow-other-keys)
   (with-slots (next-state) *game-state*
     (setf next-state (list* state-class args))))

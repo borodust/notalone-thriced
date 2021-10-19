@@ -15,7 +15,9 @@
   :mailto "dev@borodust.org"
   :depends-on (#:alien-works
                #:dissect
-               #:float-features)
+               #:float-features
+               #:cffi
+               #:cffi-c-ref)
   :serial t
   :pathname "game/"
   :components ((:file "packages")
@@ -23,6 +25,8 @@
                (:module "framework"
                 :components ((:file "tools")
                              (:file "state")
+                             (:file "resource")
+                             (:file "banner")
                              (:file "main")))
                (:module "implementation"
                 :components ((:file "game")))))
@@ -39,6 +43,9 @@
   :serial t
   :pathname "tools/"
   :components ((:file "packages")
+               (:module "assets"
+                :components ((:file "converter")
+                             (:file "resources")))
                (:module "eden"
                 :components ((:file "eden")
                              (:file "ui")))))

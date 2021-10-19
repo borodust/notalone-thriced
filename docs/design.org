@@ -60,8 +60,10 @@ References:
   - [[https://3dtextures.me/category/floor/][Other floors]]
 - Fonts
   - [[https://www.dafont.com/sector-017.font][SECTOR-017]]
-  - [[https://fontlibrary.org/en/font/blogger-sans-bold-otf][Blogger Sans-Bold]]
-  - [[https://fontlibrary.org/en/font/triod-postnaja][Triod Postnaja]]
+  - [[https://fontstruct.com/fontstructions/show/310877/sector_034][Sector 034]]
+- Audio
+  - [[https://opengameart.org/content/dark-ambience-loop][Dark Ambient Loop]]
+  - [[https://opengameart.org/content/dramatic-action][Slowish Action]]
 
 * Platforms
 - Windows 7 x64 or newer
