@@ -15,12 +15,19 @@
           title-typeface (find-asset :typeface "sector17")
           menu-typeface (find-asset :typeface "sector34"))
 
+    (with-transform (transform
+                     (:rotation 0 :x 0 :y 0 :z 1)
+                     (:translation :x 0 :y 0 :z 0)
+                     (:scale :x 1 :y 1 :z 1))
+      (aw:transform-camera *renderer* transform))
+
     (aw:camera-ortho-projection *renderer* 0 *width* 0 *height*)
     (aw:add-scene-entity *renderer* (banner-entity banner))))
 
 
 (defmethod withdraw ((this initial-state))
   (with-slots (canvas banner title-typeface menu-typeface) this
+    (aw:remove-scene-entity *renderer* (banner-entity banner))
     (destroy-banner banner)
     (aw:destroy-canvas canvas)))
 
@@ -33,6 +40,7 @@
              (setf selected (mod (1- selected) 3)))
            (perform-item-action ()
              (case selected
+               (0 (transition-to 'gameplay-state))
                (2 (throw 'quit nil)))))
       (case (aw:event-type event)
         (:keyboard-button-down

@@ -26,10 +26,13 @@
                 :components ((:file "tools")
                              (:file "state")
                              (:file "resource")
+                             (:file "cloud")
                              (:file "banner")
+                             (:file "floor")
                              (:file "main")))
                (:module "implementation"
-                :components ((:file "game")))))
+                :components ((:file "game")
+                             (:file "play")))))
 
 
 (asdf:defsystem :notalone-thriced/tools

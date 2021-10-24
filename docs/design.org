@@ -57,6 +57,7 @@ References:
 - Textures
   - [[https://3dtextures.me/2021/08/27/sci-fi-floor-003/][Floor 1]]
   - [[https://3dtextures.me/2021/06/26/metal-plate-048/][Floor 2]]
+  - [[https://3dtextures.me/2020/09/30/sci-fi-floor-001/][Floor 3]]
   - [[https://3dtextures.me/category/floor/][Other floors]]
 - Fonts
   - [[https://www.dafont.com/sector-017.font][SECTOR-017]]
@@ -64,6 +65,7 @@ References:
 - Audio
   - [[https://opengameart.org/content/dark-ambience-loop][Dark Ambient Loop]]
   - [[https://opengameart.org/content/dramatic-action][Slowish Action]]
+  - [[https://kenney.nl/assets/sci-fi-sounds][Sci-Fi SFX]]
 
 * Platforms
 - Windows 7 x64 or newer
