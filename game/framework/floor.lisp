@@ -3,7 +3,7 @@
 ;;;
 ;;; GAME
 ;;;
-(defstruct (floor
+(defstruct (%floor
             (:constructor %make-floor)
             (:conc-name %floor-))
   samplers

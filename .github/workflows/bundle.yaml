@@ -1,0 +1,57 @@
+name: Bundle
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  linux-lts-appimage:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Check Out Everything
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Set Output Bundle File
+        run: echo "BUNDLE_FILE=${{ github.workspace }}/notalone-thriced-x86_64.AppImage" >> $GITHUB_ENV
+      - id: bundle-app
+        name: Bundle Using Alien-Works-Delivery
+        uses: boroactions/alien-works-delivery@v0
+        with:
+          bundle-def-system: notalone-thriced/bundle
+          bundle-name: notalone-thriced
+          bundle-type: appimage
+          bundle-file: ${{ env.BUNDLE_FILE }}
+          lisp: sbcl_ros
+      - name: Publish Binaries
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            ${{ env.BUNDLE_FILE }}
+  linux-lts-archive:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Check Out Everything
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Set Output Bundle File
+        run: echo "BUNDLE_FILE=${{ github.workspace }}/notalone-thriced-x86_64.tar.gz" >> $GITHUB_ENV
+      - id: bundle-app
+        name: Bundle Using Alien-Works-Delivery
+        uses: boroactions/alien-works-delivery@v0
+        with:
+          bundle-def-system: notalone-thriced/bundle
+          bundle-name: notalone-thriced
+          bundle-type: archive
+          bundle-file: ${{ env.BUNDLE_FILE }}
+          lisp: sbcl_ros
+      - name: Publish Binaries
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            ${{ env.BUNDLE_FILE }}
