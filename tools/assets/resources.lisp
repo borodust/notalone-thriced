@@ -117,6 +117,13 @@ fragment {
       (pcm->resources name in :channels channels))))
 
 
+(defun parse-material (source)
+  (awt:parse-material source :debug t
+                             :target-api :opengl
+                             :platform :all
+                             :optimization :performance))
+
+
 (defun update-assets ()
   (let (assets)
     (labels ((%add (&rest resources)
@@ -127,12 +134,12 @@ fragment {
                                                      :name name)))))
       ;; banner
       (multiple-value-bind (data size)
-          (awt:parse-material *banner-material-source*) assets
+          (parse-material *banner-material-source*) assets
         (%add (notalone-thriced::make-material-resource "banner" data size)))
 
       ;; floor
       (multiple-value-bind (data size)
-          (awt:parse-material *floor-material-source*) assets
+          (parse-material *floor-material-source*) assets
         (%add (notalone-thriced::make-material-resource "floor" data size)))
       (%add-image "floor_baseColor" "floors/main/Sci-fi_Floor_001_basecolor.jpg")
       (%add-image "floor_normal" "floors/main/Sci-fi_Floor_001_normal.jpg")
@@ -140,7 +147,7 @@ fragment {
 
       ;; particles
       (multiple-value-bind (data size)
-          (awt:parse-material *particle-material-source*) assets
+          (parse-material *particle-material-source*) assets
         (%add (notalone-thriced::make-material-resource "particle" data size)))
 
       ;; alien

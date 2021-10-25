@@ -3,7 +3,7 @@
 
 (defun parse-material-resource (name source &optional base-path)
   (multiple-value-bind (data size)
-      (awt:parse-material source base-path)
+      (awt:parse-material source :base-path base-path)
     (notalone-thriced::make-material-resource name data size)))
 
 
