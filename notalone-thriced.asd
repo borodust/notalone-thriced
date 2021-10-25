@@ -17,7 +17,8 @@
                #:dissect
                #:float-features
                #:cffi
-               #:cffi-c-ref)
+               #:cffi-c-ref
+               #:local-time)
   :serial t
   :pathname "game/"
   :components ((:file "packages")
@@ -31,8 +32,10 @@
                              (:file "floor")
                              (:file "main")))
                (:module "implementation"
-                :components ((:file "game")
-                             (:file "play")))))
+                :components ((:file "record")
+                             (:file "game")
+                             (:file "play")
+                             (:file "end")))))
 
 
 (asdf:defsystem :notalone-thriced/tools

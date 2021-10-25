@@ -156,7 +156,7 @@ fragment {
                                                       (awt:buffer-size ibuf))))
 
 
-(defun parse-gltf (source-path)
+(defun parse-gltf (name source-path)
   (let ((material-table (make-hash-table :test 'equal))
         (image-table (make-hash-table :test 'equal))
         resources)
@@ -205,12 +205,12 @@ fragment {
               for mesh-idx from 0
               for vbuf = (awt:mesh-vertex-buffer mesh)
               for ibufs = (awt:mesh-index-buffers mesh)
-              for vbuf-name = (format nil "mesh.~A.vb" mesh-idx)
+              for vbuf-name = (format nil "~A.mesh.~A.vb" name mesh-idx)
               for converted-vbuf = (vertex-buffer->resources vbuf vbuf-name)
               for converted-ibufs = (loop for ibuf in ibufs
                                           for ibuf-idx from 0
-                                          for ibuf-name = (format nil "mesh.~A.ib.~A"
-                                                                  mesh-idx ibuf-idx)
+                                          for ibuf-name = (format nil "~A.mesh.~A.ib.~A"
+                                                                  name mesh-idx ibuf-idx)
                                           collect (list
                                                    ibuf-name
                                                    (index-buffer->resources ibuf ibuf-name)))
@@ -221,10 +221,20 @@ fragment {
                  (multiple-value-bind (material-name material-config)
                      (%parse-material-config mesh)
                    (add-resources (notalone-thriced::make-renderable-resource
-                                   (format nil "mesh.~A.renderable" mesh-idx)
+                                   (format nil "~A.mesh.~A.renderable" name mesh-idx)
                                    material-name
                                    geometry
-                                   material-config))))))
+                                   material-config
+                                   (a:when-let ((aabb (awt:mesh-aabb mesh)))
+                                     (let ((min (awt:aabb-min aabb))
+                                           (max (awt:aabb-max aabb)))
+                                       (list (aw:vec3 min 0)
+                                             (aw:vec3 min 1)
+                                             (aw:vec3 min 2)
+
+                                             (aw:vec3 max 0)
+                                             (aw:vec3 max 1)
+                                             (aw:vec3 max 2))))))))))
     (nreverse resources)))
 
 
@@ -235,8 +245,9 @@ fragment {
     (apply #'notalone-thriced::save-resources target rsc)))
 
 
-(defun pcm->resources (name pcm-s16-mono-stream)
+(defun pcm->resources (name pcm-s16-stream &key (channels 1))
   (list (notalone-thriced::make-audio-resource
          name
          (flex:with-output-to-sequence (out :element-type '(unsigned-byte 8))
-           (aw:encode-audio pcm-s16-mono-stream out)))))
+           (aw:encode-audio pcm-s16-stream out :channels channels))
+         :channels channels)))

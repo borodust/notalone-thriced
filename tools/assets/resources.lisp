@@ -98,6 +98,25 @@ fragment {
     (awt:load-image name (asset-path asset-path))))
 
 
+(defun convert-audio-with-ffmpeg (dst src &key (channels 1))
+  (uiop:run-program `("ffmpeg" "-y"
+                               "-i" ,(namestring src)
+                               "-f" "s16le"
+                               "-ar" "48000"
+                               "-ac" ,(format nil "~A" channels)
+                               "-acodec" "pcm_s16le"
+                               ,(namestring dst))
+                    :output nil
+                    :error-output *error-output*))
+
+
+(defun parse-audio (name path &key (channels 1))
+  (uiop:with-temporary-file (:pathname tmpfile)
+    (convert-audio-with-ffmpeg tmpfile path :channels channels)
+    (alexandria:with-input-from-file (in tmpfile :element-type '(signed-byte 16))
+      (pcm->resources name in :channels channels))))
+
+
 (defun update-assets ()
   (let (assets)
     (labels ((%add (&rest resources)
@@ -122,5 +141,19 @@ fragment {
       ;; particles
       (multiple-value-bind (data size)
           (awt:parse-material *particle-material-source*) assets
-        (%add (notalone-thriced::make-material-resource "particle" data size))))
+        (%add (notalone-thriced::make-material-resource "particle" data size)))
+
+      ;; alien
+      (apply #'%add (parse-gltf "alien" (asset-path "src/models/alien/scene.gltf")))
+
+      ;; audio
+      (apply #'%add (parse-audio "crawl" (asset-path "src/audio/3/slime_001.ogg")))
+      (apply #'%add (parse-audio "spawn" (asset-path "src/audio/2/deathb.wav")))
+      (apply #'%add (parse-audio "shot" (asset-path "src/audio/5/shotgun.wav")))
+      (apply #'%add (parse-audio "menu"
+                                 (asset-path "src/audio/4/Iwan_Gabovitch_Dark_Ambience_Loop.ogg")
+                                 :channels 2))
+      (apply #'%add (parse-audio "action"
+                                 (asset-path "src/audio/4/HorrorPen_Dramatic_Action.ogg")
+                                 :channels 2)))
     (apply #'notalone-thriced::save-resources (asset-path "assets.bin") assets)))

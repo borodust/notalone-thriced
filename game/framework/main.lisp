@@ -18,7 +18,7 @@
                 (:typeface (aw:make-typeface (a:read-file-into-byte-vector asset)))
                 (t asset)))))
 
-  (setf (aw:skybox *renderer*) (aw:make-color-skybox *renderer* 0.1 0.1 0.12 1.0))
+  (setf (aw:skybox *renderer*) (aw:make-color-skybox *renderer* 0.0 0.0 0.0 1.0))
   (init-tools *tools*)
   (transition-to 'initial-state))
 
@@ -61,7 +61,7 @@
     (dissect:with-capped-stack ()
       (float-features:with-float-traps-masked t
         (shout "Initializing host")
-        (aw:with-window (win)
+        (aw:with-window (win :title "NOTALONE: 3D")
           (let* ((*width* (aw:window-width win))
                  (*height* (aw:window-height win)))
             (shout "Initializing audio")

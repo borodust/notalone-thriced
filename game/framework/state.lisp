@@ -1,7 +1,8 @@
 (cl:in-package :notalone-thriced)
 
 
-(declaim (special *game-state*))
+(declaim (special *game-state*
+                  *state*))
 
 
 (defgeneric act (state)
@@ -9,9 +10,19 @@
     (declare (ignore state))))
 
 
+(defmethod act :around (state)
+  (let ((*state* state))
+    (call-next-method)))
+
+
 (defgeneric draw (state)
   (:method (state)
     (declare (ignore state))))
+
+
+(defmethod draw :around (state)
+  (let ((*state* state))
+    (call-next-method)))
 
 
 (defgeneric react (state event)
@@ -19,9 +30,20 @@
     (declare (ignore state event))))
 
 
+(defmethod react :around (state event)
+  (declare (ignore event))
+  (let ((*state* state))
+    (call-next-method)))
+
+
 (defgeneric withdraw (state)
   (:method (state)
     (declare (ignore state))))
+
+
+(defmethod withdraw :around (state)
+  (let ((*state* state))
+    (call-next-method)))
 
 
 (defclass game-state ()

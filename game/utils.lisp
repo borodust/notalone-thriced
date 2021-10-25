@@ -8,6 +8,17 @@
 (defvar *unloaded-foreign-libraries* nil)
 
 
+(defparameter *debug-table* (make-hash-table :test #'equal))
+
+
+(defun debug-print (name value)
+  (setf (gethash name *debug-table*) value))
+
+
+(defun debug-format (name control &rest args)
+  (setf (gethash name *debug-table*) (apply #'format nil control args)))
+
+
 (defun shout (control &rest args)
   (format *standard-output* "~&")
   (apply #'format *standard-output* control args)

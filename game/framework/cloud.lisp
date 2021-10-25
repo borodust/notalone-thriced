@@ -33,8 +33,8 @@
                           (vel))
             (flet ((update-velocity ()
                      (let ((radius 0.5))
-                       (setf (aw:vec4 tmp 0) (- radius (random (float (* 2 radius) 0f0)))
-                             (aw:vec4 tmp 1) 2
+                       (setf (aw:vec4 tmp 0) 2
+                             (aw:vec4 tmp 1) (- radius (random (float (* 2 radius) 0f0)))
                              (aw:vec4 tmp 2) (+ (aw:vec3 pos 2)
                                                 (- radius (random (float (* 2 radius) 0f0))))
                              (aw:vec4 tmp 3) 1)

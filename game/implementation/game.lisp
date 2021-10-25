@@ -3,17 +3,25 @@
 
 (defclass initial-state ()
   ((selected :initform 0)
+   (kill-count :initarg :kill-count :initform nil)
    canvas banner
    title-typeface
-   menu-typeface))
+   menu-typeface
+   music))
 
 
-(defmethod initialize-instance :after ((this initial-state) &key)
-  (with-slots (canvas banner banner-entity title-typeface menu-typeface) this
+(defmethod initialize-instance :after ((this initial-state) &key kill-count)
+  (with-slots (canvas banner banner-entity title-typeface menu-typeface music) this
     (setf canvas (aw:make-canvas *renderer* *width* *height*)
           banner (make-banner *renderer* (find-asset :material "banner") *width* *height*)
           title-typeface (find-asset :typeface "sector17")
-          menu-typeface (find-asset :typeface "sector34"))
+          menu-typeface (find-asset :typeface "sector34")
+          music (aw:make-audio-source (find-asset :audio "menu")))
+
+    (update-records kill-count)
+
+    (aw:play-audio-source music)
+    (setf (aw:audio-source-looping-p music) t)
 
     (with-transform (transform
                      (:rotation 0 :x 0 :y 0 :z 1)
@@ -26,10 +34,11 @@
 
 
 (defmethod withdraw ((this initial-state))
-  (with-slots (canvas banner title-typeface menu-typeface) this
+  (with-slots (canvas banner title-typeface menu-typeface music) this
     (aw:remove-scene-entity *renderer* (banner-entity banner))
     (destroy-banner banner)
-    (aw:destroy-canvas canvas)))
+    (aw:destroy-canvas canvas)
+    (aw:destroy-audio-source music)))
 
 
 (defmethod react ((this initial-state) event)
@@ -41,13 +50,14 @@
            (perform-item-action ()
              (case selected
                (0 (transition-to 'gameplay-state))
+               (1 (transition-to 'record-state))
                (2 (throw 'quit nil)))))
       (case (aw:event-type event)
         (:keyboard-button-down
          (case (aw:event-key-scan-code event)
            ((:down :s) (next-menu-item))
            ((:up :w) (prev-menu-item))
-           (:return (perform-item-action))))
+           ((:return :space) (perform-item-action))))
         (:gamepad-button-down
          (case (aw:event-gamepad-button event)
            (:dpad-down (next-menu-item))
@@ -60,7 +70,7 @@
 
 
 (defmethod draw ((this initial-state))
-  (with-slots (canvas banner title-typeface menu-typeface selected) this
+  (with-slots (canvas banner title-typeface menu-typeface selected kill-count) this
     (setf (banner-texture banner) (aw:canvas-texture canvas))
     (let ((time (real-time-seconds)))
       (aw:with-canvas (canvas)
@@ -91,4 +101,11 @@
                 (aw:text -110 -2  ">>>"))
               (aw:text 0 (* step 0) "DROP IN")
               (aw:text 0 (* step 1) "SERVICE RECORD")
-              (aw:text 0 (* step 2) "FLEE"))))))))
+              (aw:text 0 (* step 2) "FLEE"))))
+
+        (when kill-count
+          (aw:with-saved-transform ()
+            (aw:translate 720 880)
+            (aw:with-font (menu-typeface)
+              (aw:font-size 22)
+              (aw:text 0 0 (format nil "LAST DROP RESULT: ~A" kill-count)))))))))

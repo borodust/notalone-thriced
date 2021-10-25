@@ -292,55 +292,74 @@
 (defclass renderable-resource (resource)
   ((material :initarg :material)
    (samplers :initarg :samplers)
-   (geometry :initarg :geometry))
+   (geometry :initarg :geometry)
+   (aabb :initarg :aabb))
   (:default-initargs :kind :renderable))
 
 
-(defun make-renderable-resource (name material geometry samplers)
+(defun make-renderable-resource (name material geometry samplers aabb)
   (make-instance 'renderable-resource :name name
                                       :material material
                                       :geometry geometry
-                                      :samplers samplers))
+                                      :samplers samplers
+                                      :aabb aabb))
 
 
 (defmethod encode-resource ((this renderable-resource))
-  (with-slots (material samplers geometry) this
-    (values `(:material ,material :samplers ,samplers :geometry ,geometry) nil 0)))
+  (with-slots (material samplers geometry aabb) this
+    (values `(:material ,material :samplers ,samplers :geometry ,geometry :aabb ,aabb) nil 0)))
 
 
 (defmethod decode-resource ((this (eql :renderable)) name descriptor data-ptr data-size)
   (declare (ignore data-ptr data-size))
-  (destructuring-bind (&key material samplers geometry) descriptor
-    (make-renderable-resource name material geometry samplers)))
+  (destructuring-bind (&key material samplers geometry aabb) descriptor
+    (make-renderable-resource name material geometry samplers aabb)))
 
 
 (defmethod forge-resource ((this renderable-resource))
-  (with-slots (material samplers geometry) this
-    (let* ((mat-instance (aw:make-material-instance (find-resource material)))
-           (sampler (aw:make-sampler))
-           renderable-opts)
-      (flet ((%add-renderable-opts (&rest opts)
-               (loop for opt in opts
-                     do (push opt renderable-opts))))
-        (loop for (name texture) in samplers
-              do (setf
-                  (aw:material-instance-parameter-sampler mat-instance
-                                                          name
-                                                          (find-resource texture))
-                  sampler))
-        (loop for geometry-desc in geometry
-              for idx from 0
-              do (destructuring-bind (vertex-buffer index-buffer) geometry-desc
-                   (%add-renderable-opts (aw:.geometry idx :triangles
-                                                       (find-resource vertex-buffer)
-                                                       (find-resource index-buffer))
-                                         (aw:.material idx
-                                                       mat-instance))))
-        (apply #'aw:make-renderable *renderer* (length geometry)
-               (aw:.culling nil)
-               (aw:.receive-shadows nil)
-               (aw:.cast-shadows nil)
-               renderable-opts)))))
+  (with-slots (material samplers geometry aabb) this
+    (let ((material (find-resource material))
+          (textures (loop for (name texture) in samplers
+                          collect (cons name (find-resource texture))))
+          (buffers (loop for geometry-desc in geometry
+                         collect (destructuring-bind (vertex-buffer index-buffer) geometry-desc
+                                   (list (find-resource vertex-buffer) (find-resource index-buffer))))))
+      (flet ((%make-renderable ()
+               (let* ((mat-instance (aw:make-material-instance material))
+                      (sampler (aw:make-sampler))
+                      renderable-opts)
+                 (flet ((%add-renderable-opts (&rest opts)
+                          (loop for opt in opts
+                                do (push opt renderable-opts))))
+                   (loop for (name texture) in textures
+                         do (setf
+                             (aw:material-instance-parameter-sampler mat-instance
+                                                                     name
+                                                                     texture)
+                             sampler))
+                   (loop for (vbuf ibuf) in buffers
+                         for idx from 0
+                         do (%add-renderable-opts (aw:.geometry idx :triangles
+                                                                vbuf
+                                                                ibuf)
+                                                  (aw:.material idx
+                                                                mat-instance)))
+                   (apply #'aw:make-renderable *renderer* (length geometry)
+                          (aw:.culling t)
+                          (aw:.receive-shadows t)
+                          (aw:.cast-shadows t)
+                          (append
+                           (when aabb
+                             (destructuring-bind (&optional min-x min-y min-z max-x max-y max-z)
+                                 aabb
+                               (list (aw:.bounding-box (or min-x (- aw:+epsilon+))
+                                                       (or min-y (- aw:+epsilon+))
+                                                       (or min-z (- aw:+epsilon+))
+                                                       (or max-x (+ aw:+epsilon+))
+                                                       (or max-y (+ aw:+epsilon+))
+                                                       (or max-z (+ aw:+epsilon+))))))
+                           renderable-opts))))))
+        (values #'%make-renderable)))))
 
 
 ;;;
@@ -426,39 +445,43 @@
 ;;; AUDIO RESOURCE
 ;;;
 (defclass audio-resource (resource)
-  ((encoded :initarg :encoded :initform (error ":encoded missing")))
+  ((encoded :initarg :encoded :initform (error ":encoded missing"))
+   (channels :initarg :channels :initform 1))
   (:default-initargs :kind :audio))
 
 
-(defun make-audio-resource (name encoded)
+(defun make-audio-resource (name encoded &key (channels 1))
   (make-instance 'audio-resource
                  :name name
                  :encoded (static-vectors:make-static-vector
                            (length encoded)
                            :element-type '(unsigned-byte 8)
-                           :initial-contents encoded)))
+                           :initial-contents encoded)
+                 :channels channels))
 
 
 (defmethod encode-resource ((resource audio-resource))
-  (with-slots (encoded) resource
-    (values nil
+  (with-slots (encoded channels) resource
+    (values `(:channels ,channels)
             (static-vectors:static-vector-pointer encoded)
             (length encoded))))
 
 
 (defmethod decode-resource ((kind (eql :audio)) name descriptor data-ptr data-size)
-  (declare (ignore kind descriptor))
+  (declare (ignore kind))
   (let ((data (static-vectors:make-static-vector data-size
                                                  :element-type '(unsigned-byte 8))))
     (aw:memcpy (static-vectors:static-vector-pointer data)
                data-ptr
                data-size)
-    (make-instance 'audio-resource
-                   :name name
-                   :encoded data)))
+    (destructuring-bind (&key (channels 1)) descriptor
+      (make-instance 'audio-resource
+                     :name name
+                     :encoded data
+                     :channels channels))))
 
 
 (defmethod forge-resource ((resource audio-resource))
-  (with-slots (encoded) resource
+  (with-slots (encoded channels) resource
     (flex:with-input-from-sequence (in encoded)
-      (aw:decode-audio in))))
+      (aw:make-audio-buffer (aw:decode-audio in :channels channels) :channels channels))))
