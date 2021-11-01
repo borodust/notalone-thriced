@@ -318,48 +318,49 @@
 
 (defmethod forge-resource ((this renderable-resource))
   (with-slots (material samplers geometry aabb) this
-    (let ((material (find-resource material))
-          (textures (loop for (name texture) in samplers
-                          collect (cons name (find-resource texture))))
-          (buffers (loop for geometry-desc in geometry
-                         collect (destructuring-bind (vertex-buffer index-buffer) geometry-desc
-                                   (list (find-resource vertex-buffer) (find-resource index-buffer))))))
-      (flet ((%make-renderable ()
-               (let* ((mat-instance (aw:make-material-instance material))
-                      (sampler (aw:make-sampler))
-                      renderable-opts)
-                 (flet ((%add-renderable-opts (&rest opts)
-                          (loop for opt in opts
-                                do (push opt renderable-opts))))
-                   (loop for (name texture) in textures
-                         do (setf
-                             (aw:material-instance-parameter-sampler mat-instance
-                                                                     name
-                                                                     texture)
-                             sampler))
-                   (loop for (vbuf ibuf) in buffers
-                         for idx from 0
-                         do (%add-renderable-opts (aw:.geometry idx :triangles
-                                                                vbuf
-                                                                ibuf)
-                                                  (aw:.material idx
-                                                                mat-instance)))
-                   (apply #'aw:make-renderable *renderer* (length geometry)
-                          (aw:.culling t)
-                          (aw:.receive-shadows t)
-                          (aw:.cast-shadows t)
-                          (append
-                           (when aabb
-                             (destructuring-bind (&optional min-x min-y min-z max-x max-y max-z)
-                                 aabb
-                               (list (aw:.bounding-box (or min-x (- aw:+epsilon+))
-                                                       (or min-y (- aw:+epsilon+))
-                                                       (or min-z (- aw:+epsilon+))
-                                                       (or max-x (+ aw:+epsilon+))
-                                                       (or max-y (+ aw:+epsilon+))
-                                                       (or max-z (+ aw:+epsilon+))))))
-                           renderable-opts))))))
-        (values #'%make-renderable)))))
+    (let* ((renderable-opts (let* ((material (find-resource material))
+                                   (textures (loop for (name texture) in samplers
+                                                   collect (cons name (find-resource texture))))
+                                   (buffers (loop for geometry-desc in geometry
+                                                  collect (destructuring-bind (vertex-buffer index-buffer) geometry-desc
+                                                            (list (find-resource vertex-buffer) (find-resource index-buffer)))))
+
+                                   (sampler (aw:make-sampler))
+                                   (mat-instance (aw:make-material-instance material))
+                                   renderable-opts)
+                              (flet ((%add-renderable-opts (&rest opts)
+                                       (loop for opt in opts
+                                             do (push opt renderable-opts))))
+                                (loop for (name texture) in textures
+                                      do (setf
+                                          (aw:material-instance-parameter-sampler mat-instance
+                                                                                  name
+                                                                                  texture)
+                                          sampler))
+                                (loop for (vbuf ibuf) in buffers
+                                      for idx from 0
+                                      do (%add-renderable-opts (aw:.geometry idx :triangles
+                                                                             vbuf
+                                                                             ibuf)
+                                                               (aw:.material idx
+                                                                             mat-instance)))
+                                renderable-opts)))
+           (opts (append (list (aw:.culling t)
+                               (aw:.receive-shadows t)
+                               (aw:.cast-shadows t))
+                         (when aabb
+                           (destructuring-bind (&optional min-x min-y min-z max-x max-y max-z)
+                               aabb
+                             (list (aw:.bounding-box (or min-x (- aw:+epsilon+))
+                                                     (or min-y (- aw:+epsilon+))
+                                                     (or min-z (- aw:+epsilon+))
+                                                     (or max-x (+ aw:+epsilon+))
+                                                     (or max-y (+ aw:+epsilon+))
+                                                     (or max-z (+ aw:+epsilon+))))))
+                         renderable-opts)))
+
+      (lambda ()
+        (apply #'aw:make-renderable *renderer* (length geometry) opts)))))
 
 
 ;;;

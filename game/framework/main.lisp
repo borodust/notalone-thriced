@@ -15,7 +15,7 @@
           do (setf
               (gethash (list type name) *assets*)
               (case type
-                (:typeface (aw:make-typeface (a:read-file-into-byte-vector asset)))
+                (:typeface (aw:make-typeface (alien-works.utils:read-file-into-shareable-vector asset)))
                 (t asset)))))
 
   (setf (aw:skybox *renderer*) (aw:make-color-skybox *renderer* 0.0 0.0 0.0 1.0))
