@@ -15,10 +15,13 @@
           do (setf
               (gethash (list type name) *assets*)
               (case type
-                (:typeface (aw:make-typeface (alien-works.utils:read-file-into-shareable-vector asset)))
+                (:typeface (aw:make-typeface (aw:read-host-file-into-shareable-vector asset)))
                 (t asset)))))
 
-  (setf (aw:skybox *renderer*) (aw:make-color-skybox *renderer* 0.0 0.0 0.0 1.0))
+  (setf (aw:scene-skybox *scene*) (aw:make-color-skybox *renderer* 0.0 0.0 0.0 1.0)
+        (aw:scene-skybox *overlay*) (aw:make-color-skybox *renderer* 0.0 0.0 0.0 0.0))
+  (aw:scene-camera-lens-projection *scene* 28f0 (/ *width* *height*) 0.1 100)
+  (aw:scene-camera-ortho-projection *overlay* 0 *width* 0 *height*)
   (init-tools *tools*)
   (transition-to 'initial-state))
 
@@ -47,7 +50,9 @@
   (let ((time-delta 0.014))
     (update-tools *tools* time-delta)
     (game-state-act)
-    (aw:with-frame (*renderer*)
+    (aw:when-frame (*renderer*)
+      (aw:render-scene *scene*)
+      (aw:render-scene *overlay*)
       (render-tools *tools*)
       (game-state-draw))
     ;; FIXME: add proper delta calc
@@ -63,15 +68,24 @@
         (shout "Initializing host")
         (aw:with-window (win :title "NOTALONE: 3D")
           (let* ((*width* (aw:window-width win))
-                 (*height* (aw:window-height win)))
+                 (*height* (aw:window-height win))
+                 (*framebuffer-width* (aw:framebuffer-width win))
+                 (*framebuffer-height* (aw:framebuffer-height win)))
             (shout "Initializing audio")
             (aw:with-audio ()
               (shout "Initializing renderer")
-              (aw:with-engine (renderer :window win
-                                        :width *width*
-                                        :height *height*)
+              (aw:with-renderer (renderer :window win)
                 (shout "Framework ready")
                 (let ((*renderer* renderer)
+                      (*scene* (aw:make-scene renderer
+                                              *framebuffer-width*
+                                              *framebuffer-height*))
+                      (*overlay* (aw:make-scene renderer
+                                                *framebuffer-width*
+                                                *framebuffer-height*
+                                                :post-processing nil
+                                                :shadows nil
+                                                :blend-mode :translucent))
                       (*game-state* (make-instance 'game-state)))
                   (with-tools (:notalone-thriced-tools :renderer renderer)
                     (apply #'init-loop assets rest-assets)
@@ -86,7 +100,10 @@
                                   (restart-loop ()
                                     :report "Restart game loop"
                                     (go start))))))
-                      (destroy-loop))))))))))))
+
+                      (destroy-loop)
+                      (aw:destroy-scene *scene*)
+                      (aw:destroy-scene *overlay*))))))))))))
 
 
 (defun asset-path (asset-name)

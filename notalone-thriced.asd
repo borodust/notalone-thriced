@@ -32,7 +32,8 @@
                              (:file "floor")
                              (:file "main")))
                (:module "implementation"
-                :components ((:file "record")
+                :components ((:file "state")
+                             (:file "record")
                              (:file "game")
                              (:file "play")
                              (:file "end")))))
@@ -45,7 +46,16 @@
   :author "Pavel Korolev"
   :mailto "dev@borodust.org"
   :depends-on (#:notalone-thriced/game
-               #:alien-works/tools)
+               #:alien-works/tools
+
+               #:slynk
+               #:slynk/mrepl
+               #:slynk/arglists
+               #:slynk/fancy-inspector
+               #:slynk/package-fu
+               #:slynk/trace-dialog
+               #:slynk/stickers
+               #:slynk/indentation)
   :serial t
   :pathname "tools/"
   :components ((:file "packages")
@@ -63,7 +73,7 @@
   :license "MIT"
   :author "Pavel Korolev"
   :mailto "dev@borodust.org"
-  :depends-on (#:notalone-thriced/game #:alien-works-delivery)
+  :depends-on (#:alien-works-delivery)
   :serial t
   :pathname "bundle/"
   :components ((:file "bundle")))

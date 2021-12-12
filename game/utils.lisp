@@ -2,8 +2,12 @@
 
 
 (declaim (special *renderer*
+                  *scene*
+                  *overlay*
                   *width*
-                  *height*))
+                  *height*
+                  *framebuffer-width*
+                  *framebuffer-height*))
 
 (defvar *unloaded-foreign-libraries* nil)
 

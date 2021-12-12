@@ -24,7 +24,7 @@
 
 (defun make-enemy (x y)
   (let ((renderable (funcall (find-asset :renderable "alien.mesh.0.renderable"))))
-    (aw:add-scene-entity *renderer* renderable)
+    (aw:add-scene-entity *scene* renderable)
     (%make-enemy :position (aw:make-vec2 x y)
                  :created (real-time-seconds)
                  :entity renderable
@@ -94,7 +94,7 @@
   (loop for source in (enemy-sound-sources enemy)
         do (aw:stop-audio-source source)
            (aw:destroy-audio-source source))
-  (aw:remove-scene-entity *renderer* (enemy-entity enemy))
+  (aw:remove-scene-entity *scene* (enemy-entity enemy))
   (aw:destroy-vec2 (enemy-position enemy)))
 
 ;;;
@@ -110,7 +110,7 @@
   (let ((particles (make-particle-cloud *renderer* (find-asset :material "particle")
                                         x y angle vel-x vel-y)))
     (setf (particle-cloud-delta particles) 0)
-    (aw:add-scene-entity *renderer* (particle-cloud-entity particles))
+    (aw:add-scene-entity *scene* (particle-cloud-entity particles))
     (%make-particle-cloud-instance :instance particles)))
 
 
@@ -135,7 +135,7 @@
 
 (defun destroy-particle-cloud-instance (instance)
   (let ((instance (particle-cloud-instance-instance instance)))
-    (aw:remove-scene-entity *renderer* (particle-cloud-entity instance))
+    (aw:remove-scene-entity *scene* (particle-cloud-entity instance))
     (destroy-particle-cloud instance)))
 
 
@@ -158,7 +158,7 @@
                                    (find-asset :texture "floor_baseColor")
                                    (find-asset :texture "floor_normal")
                                    (find-asset :texture "floor_arm")))
-                      (aw:add-scene-entity *renderer* (floor-entity (aref patches i j)))))
+                      (aw:add-scene-entity *scene* (floor-entity (aref patches i j)))))
     (%make-endless-floor :patches patches)))
 
 
@@ -186,13 +186,13 @@
     (loop for i below (array-dimension patches 0)
           do (loop for j below (array-dimension patches 1)
                    for patch = (aref patches i j)
-                   do (aw:remove-scene-entity *renderer* (floor-entity patch))
+                   do (aw:remove-scene-entity *scene* (floor-entity patch))
                       (destroy-floor patch)))))
 
 ;;;
 ;;; STATE
 ;;;
-(defclass gameplay-state ()
+(defclass gameplay-state (notalone-state)
   ((mouse-state :initform (aw:make-mouse-state))
    (key-bag :initform (list))
    (player-angle :initform (/ pi 2))
@@ -221,9 +221,7 @@
       (push music player-sources)
       (aw:play-audio-source music)
       (setf (aw:audio-source-looping-p music) t))
-
-    (aw:camera-lens-projection *renderer* 28f0 (/ *width* *height*) 0.1 100)
-    (aw:add-scene-entity *renderer* flashlight)))
+    (aw:add-scene-entity *scene* flashlight)))
 
 
 (defmethod withdraw ((this gameplay-state))
@@ -234,7 +232,7 @@
     (loop for instance in particles
           do (destroy-particle-cloud-instance instance))
 
-    (aw:remove-scene-entity *renderer* flashlight)
+    (aw:remove-scene-entity *scene* flashlight)
     (loop for enemy in enemies
           do (destroy-enemy enemy))
     (loop for source in player-sources
@@ -344,7 +342,7 @@
                                    :y (+ (aw:vec2 player-position 1) -0.1)
                                    :z 2)
                      (:rotation (* (/ pi 180) 3) :x 1))
-      (aw:transform-camera *renderer* transform))
+      (aw:transform-scene-camera *scene* transform))
 
     (aw:with-vec3 (pos :x (aw:vec2 player-position 0)
                        :y (aw:vec2 player-position 1))
@@ -384,4 +382,18 @@
 
 
 (defmethod draw ((this gameplay-state))
-  (with-slots () this))
+  (with-slots (kill-count started) this
+    (menu-paint-color)
+
+    (aw:with-font (*menu-typeface*)
+      (aw:font-size 26)
+      (aw:with-saved-transform ()
+        (aw:translate (- *width* 120) 40)
+        (aw:text 0 0 "~3,'0D" kill-count))
+
+      (aw:with-saved-transform ()
+        (let* ((play-time-seconds (- (real-time-seconds) started))
+               (minutes (floor (/ play-time-seconds 60)))
+               (seconds (floor (mod play-time-seconds 60))))
+          (aw:translate 14 40)
+          (aw:text 0 0 "~1,'0D:~2,'0D" minutes seconds))))))

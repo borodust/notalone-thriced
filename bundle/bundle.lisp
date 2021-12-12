@@ -5,3 +5,12 @@
            (:file (:system "assets/gamecontrollerdb.txt"))
            (:file (:system "assets/sector_017.ttf"))
            (:file (:system "assets/sector_034.otf"))))
+
+
+(alien-works-delivery:defbundle :notalone-thriced/dev
+  :system :notalone-thriced
+  :entry-point (:alien-works :run)
+  :assets ((:file (:system "assets/assets.bin"))
+           (:file (:system "assets/gamecontrollerdb.txt"))
+           (:file (:system "assets/sector_017.ttf"))
+           (:file (:system "assets/sector_034.otf"))))
