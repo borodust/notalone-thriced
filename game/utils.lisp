@@ -1,8 +1,7 @@
 (cl:in-package :notalone-thriced)
 
 
-(declaim (special *renderer*
-                  *scene*
+(declaim (special *scene*
                   *overlay*
                   *width*
                   *height*

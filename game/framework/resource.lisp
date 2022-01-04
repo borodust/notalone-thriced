@@ -154,10 +154,9 @@
     (multiple-value-bind (opts vertex-size)
         (parse-buffer-descriptor descriptor)
       (let ((buf (apply #'aw:make-vertex-buffer
-                        *renderer*
                         (/ size vertex-size)
                         opts)))
-        (aw:fill-vertex-buffer *renderer* buf data size)
+        (aw:fill-vertex-buffer buf data size)
         buf))))
 
 
@@ -178,10 +177,9 @@
     (multiple-value-bind (opts index-size)
         (parse-buffer-descriptor descriptor)
       (let ((buf (apply #'aw:make-index-buffer
-                        *renderer*
                         (/ size index-size)
                         opts)))
-        (aw:fill-index-buffer *renderer* buf data size)
+        (aw:fill-index-buffer buf data size)
         buf))))
 
 ;;;
@@ -250,18 +248,17 @@
 
 (defmethod forge-resource ((this texture-resource))
   (with-slots (descriptor width height format pixel-buffer sampler) this
-    (let ((tex (aw:make-texture *renderer*
-                                (aw:.width width)
+    (let ((tex (aw:make-texture (aw:.width width)
                                 (aw:.height height)
                                 (aw:.format format)
                                 (aw:.sampler sampler))))
       (when pixel-buffer
         (multiple-value-bind (forged-pb resource-pb) (find-resource pixel-buffer)
           (ecase sampler
-            (:2d (aw:update-texture-image *renderer* tex 0 forged-pb))
-            (:cubemap (aw:update-cubemap-images *renderer* tex 0 forged-pb
+            (:2d (aw:update-texture-image tex 0 forged-pb))
+            (:cubemap (aw:update-cubemap-images tex 0 forged-pb
                                                 (/ (buffer-resource-size resource-pb) 6))))
-          (aw:generate-texture-mipmaps *renderer* tex)))
+          (aw:generate-texture-mipmaps tex)))
       tex)))
 
 ;;;
@@ -282,7 +279,7 @@
 
 (defmethod forge-resource ((this material-resource))
   (with-slots (data size) this
-    (aw:make-material-from-memory *renderer* data size)))
+    (aw:make-material-from-memory data size)))
 
 
 
@@ -360,7 +357,7 @@
                          renderable-opts)))
 
       (lambda ()
-        (apply #'aw:make-renderable *renderer* (length geometry) opts)))))
+        (apply #'aw:make-renderable (length geometry) opts)))))
 
 
 ;;;

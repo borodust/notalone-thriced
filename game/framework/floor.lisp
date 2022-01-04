@@ -14,15 +14,15 @@
   ibuf)
 
 
-(defun make-floor (renderer material base-color-texture normal-texture arm-texture)
+(defun make-floor (material base-color-texture normal-texture arm-texture)
   (let* ((vertex-size (cffi:foreign-type-size '(:struct banner-vertex)))
          (index-size (cffi:foreign-type-size :uint16))
          (pos-size (* 2 (cffi:foreign-type-size :float)))
 
-         (vbuf (aw:make-vertex-buffer renderer 4
+         (vbuf (aw:make-vertex-buffer 4
                                       (aw:.attribute :position :float2 0 vertex-size)
                                       (aw:.attribute :uv0 :float2 pos-size vertex-size)))
-         (ibuf (aw:make-index-buffer renderer 6
+         (ibuf (aw:make-index-buffer 6
                                      (aw:.type :ushort)))
          (data (make-banner-data 1 1))
          (samplers (list (aw:make-sampler)
@@ -30,9 +30,9 @@
                          (aw:make-sampler)))
          (mat-instance (aw:make-material-instance material)))
     (cref:c-val ((data (:struct banner-data)))
-      (aw:fill-vertex-buffer renderer vbuf (data :vertices &)
+      (aw:fill-vertex-buffer vbuf (data :vertices &)
                              (* 4 vertex-size))
-      (aw:fill-index-buffer renderer ibuf
+      (aw:fill-index-buffer ibuf
                             (data :indices &)
                             (* 6 index-size)))
     (loop for (name . tex) in `(("baseColor" . ,base-color-texture)
@@ -47,7 +47,7 @@
                  :data data
                  :samplers samplers
                  :mat-instance mat-instance
-                 :renderable (aw:make-renderable renderer 1
+                 :renderable (aw:make-renderable 1
                                                  (aw:.bounding-box -0.001 -0.001 -0.001
                                                                    1.001 1.001 0.001)
                                                  (aw:.culling t)

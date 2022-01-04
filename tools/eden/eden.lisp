@@ -32,12 +32,12 @@
     (setf (gethash name context) value)))
 
 
-(defmethod notalone-thriced::make-tools ((name (eql :notalone-thriced-tools)) &key renderer)
+(defmethod notalone-thriced::make-tools ((name (eql :notalone-thriced-tools)) &key)
   (make-instance 'game-tools
                  :repl-server (slynk:create-server :port 11958)
                  :ui (if (uiop:featurep :android)
-                         (awt:make-ui renderer :scale 3 :touch-padding 3)
-                         (awt:make-ui renderer))))
+                         (awt:make-ui :scale 3 :touch-padding 3)
+                         (awt:make-ui))))
 
 
 (defmethod notalone-thriced::destroy-tools ((tools game-tools))

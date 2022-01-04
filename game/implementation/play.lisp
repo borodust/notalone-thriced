@@ -62,7 +62,7 @@
                                      :z 0.01)
                        (:rotation life :z 1)
                        (:scale :x scale :y scale :z scale))
-        (aw:transform-entity *renderer* (enemy-entity enemy) transform))
+        (aw:transform-entity (enemy-entity enemy) transform))
       (loop for source in (enemy-sound-sources enemy)
             if (eq :playing (aw:audio-source-state source))
               do (aw:with-vec3 (pos :x (aw:vec2 enemy-position 0)
@@ -107,7 +107,7 @@
 
 
 (defun make-particle-cloud-instance (x y angle vel-x vel-y)
-  (let ((particles (make-particle-cloud *renderer* (find-asset :material "particle")
+  (let ((particles (make-particle-cloud (find-asset :material "particle")
                                         x y angle vel-x vel-y)))
     (setf (particle-cloud-delta particles) 0)
     (aw:add-scene-entity *scene* (particle-cloud-entity particles))
@@ -153,8 +153,7 @@
           do (loop for j below height
                    do (setf
                        (aref patches i j)
-                       (make-floor *renderer*
-                                   (find-asset :material "floor")
+                       (make-floor (find-asset :material "floor")
                                    (find-asset :texture "floor_baseColor")
                                    (find-asset :texture "floor_normal")
                                    (find-asset :texture "floor_arm")))
@@ -178,7 +177,7 @@
                      do (with-transform (transform
                                          (:transform root-transform)
                                          (:translation :x i :y j))
-                          (aw:transform-entity *renderer* (floor-entity patch) transform)))))))
+                          (aw:transform-entity (floor-entity patch) transform)))))))
 
 
 (defun destroy-endless-floor (floor)
@@ -210,7 +209,7 @@
   (with-slots (floor flashlight player-sources) this
     (setf floor (make-endless-floor 5 4)
           flashlight (aw:with-vec3 (light-direction :x 0f0 :y 0f0 :z -1f0)
-                       (aw:make-light *renderer* :focused-spot
+                       (aw:make-light :focused-spot
                                       (aw:.cast-shadows t)
                                       (aw:.intensity 100000)
                                       (aw:.direction light-direction)
@@ -238,7 +237,7 @@
     (loop for source in player-sources
           do (aw:destroy-audio-source source))
 
-    (aw:destroy-light *renderer* flashlight)
+    (aw:destroy-light flashlight)
     (destroy-endless-floor floor)
 
     (aw:destroy-vec2 player-velocity)
@@ -375,7 +374,7 @@
                        (:transform root-transform)
                        (:translation :z 0.05)
                        (:rotation  (* (/ pi 180) -80) :y 1))
-        (aw:transform-entity *renderer* flashlight transform)))
+        (aw:transform-entity flashlight transform)))
 
     (when (player-dead-p)
       (transition-to 'end-state :kill-count kill-count))))

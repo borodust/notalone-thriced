@@ -81,31 +81,31 @@
   ibuf)
 
 
-(defun make-particle-cloud (renderer material x y angle vel-x vel-y)
+(defun make-particle-cloud (material x y angle vel-x vel-y)
   (let* ((vertex-size (cffi:foreign-type-size '(:struct particle-cloud-vertex)))
          (index-size (cffi:foreign-type-size :uint16))
          (color-offset (* 3 (cffi:foreign-type-size :float)))
          (velocity-offset (+ color-offset (* 4 (cffi:foreign-type-size :float))))
 
-         (vbuf (aw:make-vertex-buffer renderer +particle-count+
+         (vbuf (aw:make-vertex-buffer +particle-count+
                                       (aw:.attribute :position :float3 0 vertex-size)
                                       (aw:.attribute :color :float4 color-offset vertex-size)
                                       (aw:.attribute :custom0 :float3 velocity-offset vertex-size)))
-         (ibuf (aw:make-index-buffer renderer +particle-count+
+         (ibuf (aw:make-index-buffer +particle-count+
                                      (aw:.type :ushort)))
          (data (make-particle-cloud-data x y angle vel-x vel-y))
          (mat-instance (aw:make-material-instance material)))
     (cref:c-val ((data (:struct particle-cloud-data)))
-      (aw:fill-vertex-buffer renderer vbuf (data :vertices &)
+      (aw:fill-vertex-buffer vbuf (data :vertices &)
                              (* +particle-count+ vertex-size))
-      (aw:fill-index-buffer renderer ibuf
+      (aw:fill-index-buffer ibuf
                             (data :indices &)
                             (* +particle-count+ index-size)))
     (%make-particle-cloud :vbuf vbuf
                           :ibuf ibuf
                           :data data
                           :mat-instance mat-instance
-                          :renderable (aw:make-renderable renderer 1
+                          :renderable (aw:make-renderable 1
                                                           (aw:.bounding-box -0.001 -0.001 -0.001
                                                                             0.001 0.001 0.001)
                                                           (aw:.culling nil)

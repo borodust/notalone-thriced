@@ -18,8 +18,8 @@
                 (:typeface (aw:make-typeface (aw:read-host-file-into-shareable-vector asset)))
                 (t asset)))))
 
-  (setf (aw:scene-skybox *scene*) (aw:make-color-skybox *renderer* 0.0 0.0 0.0 1.0)
-        (aw:scene-skybox *overlay*) (aw:make-color-skybox *renderer* 0.0 0.0 0.0 0.0))
+  (setf (aw:scene-skybox *scene*) (aw:make-color-skybox 0.0 0.0 0.0 1.0)
+        (aw:scene-skybox *overlay*) (aw:make-color-skybox 0.0 0.0 0.0 0.0))
   (aw:scene-camera-lens-projection *scene* 28f0 (/ *width* *height*) 0.1 100)
   (aw:scene-camera-ortho-projection *overlay* 0 *width* 0 *height*)
   (init-tools *tools*)
@@ -50,7 +50,7 @@
   (let ((time-delta 0.014))
     (update-tools *tools* time-delta)
     (game-state-act)
-    (aw:when-frame (*renderer*)
+    (aw:when-frame ()
       (aw:render-scene *scene*)
       (aw:render-scene *overlay*)
       (render-tools *tools*)
@@ -60,50 +60,36 @@
 
 
 (defun run (assets &rest rest-assets)
-  (handler-bind ((serious-condition (lambda (c)
-                                      (format *error-output* "~%Unhandled serious condition:~%")
-                                      (dissect:present c *error-output*))))
-    (dissect:with-capped-stack ()
-      (float-features:with-float-traps-masked t
-        (shout "Initializing host")
-        (aw:with-window (win :title "NOTALONE: 3D")
-          (let* ((*width* (aw:window-width win))
-                 (*height* (aw:window-height win))
-                 (*framebuffer-width* (aw:framebuffer-width win))
-                 (*framebuffer-height* (aw:framebuffer-height win)))
-            (shout "Initializing audio")
-            (aw:with-audio ()
-              (shout "Initializing renderer")
-              (aw:with-renderer (renderer :window win)
-                (shout "Framework ready")
-                (let ((*renderer* renderer)
-                      (*scene* (aw:make-scene renderer
-                                              *framebuffer-width*
-                                              *framebuffer-height*))
-                      (*overlay* (aw:make-scene renderer
-                                                *framebuffer-width*
-                                                *framebuffer-height*
-                                                :post-processing nil
-                                                :shadows nil
-                                                :blend-mode :translucent))
-                      (*game-state* (make-instance 'game-state)))
-                  (with-tools (:notalone-thriced-tools :renderer renderer)
-                    (apply #'init-loop assets rest-assets)
-                    (shout "Game ready")
-                    (unwind-protect
-                         (catch 'quit
-                           (shout "Looping")
-                           (loop
-                             (tagbody start
-                                (restart-case
-                                    (handle-loop)
-                                  (restart-loop ()
-                                    :report "Restart game loop"
-                                    (go start))))))
+  (alien-works:with-alien-works (:window-title "NOTALONE: 3D")
+    (let* ((*width* (aw:window-width))
+           (*height* (aw:window-height))
+           (*framebuffer-width* (aw:framebuffer-width))
+           (*framebuffer-height* (aw:framebuffer-height))
+           (*scene* (aw:make-scene *framebuffer-width*
+                                   *framebuffer-height*))
+           (*overlay* (aw:make-scene *framebuffer-width*
+                                     *framebuffer-height*
+                                     :post-processing nil
+                                     :shadows nil
+                                     :blend-mode :translucent))
+           (*game-state* (make-instance 'game-state)))
+      (with-tools (:notalone-thriced-tools)
+        (apply #'init-loop assets rest-assets)
+        (shout "Game ready")
+        (unwind-protect
+             (catch 'quit
+               (shout "Looping")
+               (loop
+                 (tagbody start
+                    (restart-case
+                        (handle-loop)
+                      (restart-loop ()
+                        :report "Restart game loop"
+                        (go start))))))
 
-                      (destroy-loop)
-                      (aw:destroy-scene *scene*)
-                      (aw:destroy-scene *overlay*))))))))))))
+          (destroy-loop)
+          (aw:destroy-scene *scene*)
+          (aw:destroy-scene *overlay*))))))
 
 
 (defun asset-path (asset-name)
